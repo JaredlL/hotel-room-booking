@@ -1,0 +1,130 @@
+@HotelRoomBooking_HostAddress = http://localhost:5160
+@HotelRoomBooking_DefaultHotelName = Grand Plaza Hotel
+
+### Add a Hotel
+POST {{HotelRoomBooking_HostAddress}}/hotels
+Content-Type: application/json
+
+{
+  "name": "{{HotelRoomBooking_DefaultHotelName}}",
+  "rooms": [
+    {
+      "roomName": "101",
+      "roomType": "Single",
+      "capacity": 1
+    },
+    {
+      "roomName": "102",
+      "roomType": "Double",
+      "capacity": 2
+    },
+    {
+      "roomName": "103",
+      "roomType": "Deluxe",
+      "capacity": 2
+    },
+    {
+      "roomName": "104",
+      "roomType": "Single",
+      "capacity": 1
+    },
+    {
+      "roomName": "105",
+      "roomType": "Double",
+      "capacity": 2
+    },
+    {
+      "roomName": "106",
+      "roomType": "Deluxe",
+      "capacity": 2
+    }
+  ]
+}
+
+### Get the Hotel
+GET {{HotelRoomBooking_HostAddress}}/hotels/{{HotelRoomBooking_DefaultHotelName}}
+
+### Get available Rooms
+GET {{HotelRoomBooking_HostAddress}}/hotels/{{HotelRoomBooking_DefaultHotelName}}/available-rooms?checkin=2025-11-07&checkout=2025-11-09
+
+### Request a Booking for 2 guests
+POST {{HotelRoomBooking_HostAddress}}/hotels/{{HotelRoomBooking_DefaultHotelName}}/bookings
+Content-Type: application/json
+
+{
+  "guestId": "Bob",
+  "numberOfGuests": 2,
+  "checkInDate": "2025-11-07",
+  "checkOutDate": "2025-11-09"
+}
+
+### Request a Booking for 1 guest
+POST {{HotelRoomBooking_HostAddress}}/hotels/{{HotelRoomBooking_DefaultHotelName}}/bookings
+Content-Type: application/json
+
+{
+  "guestId": "Alice",
+  "numberOfGuests": 1,
+  "checkInDate": "2025-11-07",
+  "checkOutDate": "2025-11-09"
+}
+
+### Request a Booking for 3
+POST {{HotelRoomBooking_HostAddress}}/hotels/{{HotelRoomBooking_DefaultHotelName}}/bookings
+Content-Type: application/json
+
+{
+  "guestId": "Dan",
+  "numberOfGuests": 3,
+  "checkInDate": "2025-11-07",
+  "checkOutDate": "2025-11-09"
+}
+
+### Request a Booking for Deluxe
+POST {{HotelRoomBooking_HostAddress}}/hotels/{{HotelRoomBooking_DefaultHotelName}}/bookings
+Content-Type: application/json
+
+{
+  "guestId": "Chris",
+  "roomType": "Deluxe",
+  "numberOfGuests": 2,
+  "checkInDate": "2025-11-07",
+  "checkOutDate": "2025-11-09"
+}
+
+### Request a Booking for Room 102
+POST {{HotelRoomBooking_HostAddress}}/hotels/{{HotelRoomBooking_DefaultHotelName}}/bookings
+Content-Type: application/json
+
+{
+  "guestId": "Lauren",
+  "RoomName": "102",
+  "numberOfGuests": 2,
+  "checkInDate": "2025-11-07",
+  "checkOutDate": "2025-11-09"
+}
+
+### Request a Booking for Deluxe Room 102 (doesnt exist)
+POST {{HotelRoomBooking_HostAddress}}/hotels/{{HotelRoomBooking_DefaultHotelName}}/bookings
+Content-Type: application/json
+
+{
+  "guestId": "Andy",
+  "RoomName": "102",
+  "roomType": "Deluxe",
+  "numberOfGuests": 2,
+  "checkInDate": "2025-11-07",
+  "checkOutDate": "2025-11-09"
+}
+
+### Get Booking
+GET {{HotelRoomBooking_HostAddress}}/bookings/1
+
+### Seed with test data
+POST {{HotelRoomBooking_HostAddress}}/testdata
+
+### Clear all data
+DELETE {{HotelRoomBooking_HostAddress}}/testdata
+
+### Get all hotels
+GET {{HotelRoomBooking_HostAddress}}/hotels

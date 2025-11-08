@@ -1,0 +1,35 @@
+{
+  "name": "Central",
+  "rooms": [
+    {
+      "roomName": "101",
+      "roomType": "Single",
+      "capacity": 1
+    },
+    {
+      "roomName": "102",
+      "roomType": "Double",
+      "capacity": 2
+    },
+    {
+      "roomName": "103",
+      "roomType": "Deluxe",
+      "capacity": 2
+    },
+    {
+      "roomName": "104",
+      "roomType": "Single",
+      "capacity": 1
+    },
+    {
+      "roomName": "105",
+      "roomType": "Double",
+      "capacity": 2
+    },
+    {
+      "roomName": "106",
+      "roomType": "Deluxe",
+      "capacity": 2
+    }
+  ]
+}

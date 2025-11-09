@@ -13,11 +13,23 @@ public class Hotel
     public IReadOnlyCollection<Link> Links  =>
     [
         new()
-            {
-                Href = $"{Name}/bookings",
-                Rel = "bookings",
-                Type = "get"
-            }
+        {
+            Href = $"hotels/{Name}",
+            Rel = "self",
+            Method = "get"
+        },
+        new()
+        {
+            Href = $"{Name}/available-rooms",
+            Rel = "rooms",
+            Method = "get"
+        },
+        new()
+        {
+            Href = $"hotels/{Name}/bookings",
+            Rel = "bookings",
+            Method = "post"
+        },
     ];
 
 }

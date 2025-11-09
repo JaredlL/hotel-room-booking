@@ -1,4 +1,5 @@
 ﻿using HotelRoomBooking.Data;
+using HotelRoomBooking.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelRoomBooking.Services;
@@ -16,7 +17,10 @@ public static class BookingService
                     .Include(x => x.BookedNights)
                     .FirstOrDefaultAsync(x => x.BookingReference == bookingReference);
 
-                return booking is not null ? Results.Ok(booking) : Results.NotFound();
-            });
+                return booking is not null
+                    ? Results.Ok(new BookingDto(booking))
+                    : Results.NotFound();
+            })
+            .WithName("GetBookingById");
     }
 }

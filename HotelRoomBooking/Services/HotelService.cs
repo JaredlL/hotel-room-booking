@@ -12,9 +12,21 @@ public class HotelService
     {
         app.MapPost("/hotels", async (Hotel hotel, HotelRoomDbContext dbContext) =>
             {
-                dbContext.Hotels.Add(hotel);
-                await dbContext.SaveChangesAsync();
-                return Results.Created($"/hotels/{hotel.Name}", hotel);
+                // Two or more requests may race to create the same hotel.
+                // The Hotel unique name (primary key) will ensure that this is not possible, but to avoid a
+                // 500 error code we use a resilience strategy to retry and potentially return 409 instead.
+                return await ResilienceStrategies.UniqueConstraintRaceConditionStrategy.ExecuteAsync(async ct =>
+                {
+                    var existing = await dbContext.Hotels.FindAsync([hotel.Name], ct);
+                    if (existing is not null)
+                    {
+                        return Results.Conflict();
+                    }
+
+                    dbContext.Hotels.Add(hotel);
+                    await dbContext.SaveChangesAsync(ct);
+                    return Results.Created($"/hotels/{hotel.Name}", hotel);
+                });
             })
             .WithName("CreateHotel")
             .AddEndpointFilter<ValidationFilter<Hotel>>();
@@ -76,62 +88,85 @@ public class HotelService
         app.MapPost("/hotels/{hotelName}/bookings",
                 async (string hotelName, BookingRequest bookingRequest, HotelRoomDbContext dbContext) =>
                 {
-                    if (bookingRequest.CheckInDate >= bookingRequest.CheckOutDate)
+                    // Two or more requests may race to create the same booking.
+                    // The DB composite key constraint will ensure that this is not possible, but to avoid a
+                    // 500 error code we use a resilience strategy to retry the operation so that
+                    // a 409 can be returned.
+                    return await ResilienceStrategies.UniqueConstraintRaceConditionStrategy.ExecuteAsync(async ct =>
                     {
-                        return Results.BadRequest("Check-in date must be before check-out date");
-                    }
+                        var hotel = await dbContext.Hotels
+                            .Include(x => x.Rooms)
+                            .FirstOrDefaultAsync(x => x.Name == hotelName, ct);
 
-                    var hotel = await dbContext.Hotels
-                        .Include(x => x.Rooms)
-                        .FirstOrDefaultAsync(x => x.Name == hotelName);
-
-                    if (hotel is null)
-                    {
-                        return Results.NotFound();
-                    }
-
-                    var roomIds = hotel.Rooms.Select(r => r.Id).ToList();
-
-                    var alreadyBookedRoomIds = await dbContext.BookedNights
-                        .Where(x =>
-                            roomIds.Contains(x.RoomId)
-                            && x.Date >= bookingRequest.CheckInDate
-                            && x.Date < bookingRequest.CheckOutDate)
-                        .Select(x => x.RoomId)
-                        .Distinct()
-                        .ToArrayAsync();
-
-                    var firstFreeRoom = hotel.Rooms
-                        .Where(r => r.Matches(bookingRequest))
-                        .FirstOrDefault(room => !alreadyBookedRoomIds.Contains(room.Id));
-
-                    if (firstFreeRoom is not null)
-                    {
-                        var nights = bookingRequest.RequiredNights.Select(date => new BookedNight()
+                        if (hotel is null)
                         {
-                            RoomId = firstFreeRoom.Id,
-                            Date = date
-                        })
-                        .ToList();
+                            return Results.NotFound();
+                        }
 
-                        var booking = new Booking
+                        var firstFreeRoom = await FirstFreeMatchingRoom(hotel, dbContext, bookingRequest);
+                        if (firstFreeRoom is not null)
                         {
-                            BookedNights = nights,
-                            BookedRoom = firstFreeRoom,
-                            GuestId = bookingRequest.GuestId,
-                            Hotel = hotel,
-                            NumberOfGuests = bookingRequest.NumberOfGuests
-                        };
+                            return await CreateBooking(bookingRequest, firstFreeRoom, hotel, dbContext);
+                        }
 
-                        dbContext.Bookings.Add(booking);
-                        await dbContext.SaveChangesAsync();
-
-                        return Results.Created($"/bookings/{booking.BookingReference}", booking);
-                    }
-
-                    return Results.Conflict("No room found for the given criteria");
+                        return Results.Conflict("All suitable rooms are fully booked");
+                    });
                 })
             .WithName("CreateBooking")
+            .WithDescription("Attempts to book a room that matches the given criteria.")
             .AddEndpointFilter<ValidationFilter<BookingRequest>>();
+    }
+
+    private static async Task<IResult> CreateBooking(
+        BookingRequest bookingRequest,
+        Room firstFreeRoom,
+        Hotel hotel,
+        HotelRoomDbContext dbContext)
+    {
+        var nights = bookingRequest.RequiredNights.Select(date => new BookedNight()
+            {
+                RoomId = firstFreeRoom.Id,
+                Date = date
+            })
+            .ToList();
+
+        var booking = new Booking
+        {
+            BookedNights = nights,
+            BookedRoom = firstFreeRoom,
+            GuestId = bookingRequest.GuestId,
+            Hotel = hotel,
+            NumberOfGuests = bookingRequest.NumberOfGuests
+        };
+
+        dbContext.Bookings.Add(booking);
+        await dbContext.SaveChangesAsync();
+
+        var bookingDto = new BookingDto(booking);
+
+        return Results.Created($"/bookings/{booking.BookingReference}", bookingDto);
+    }
+
+    private static async Task<Room?> FirstFreeMatchingRoom(
+        Hotel hotel,
+        HotelRoomDbContext dbContext,
+        BookingRequest bookingRequest)
+    {
+        var roomIds = hotel.Rooms.Select(r => r.Id).ToList();
+
+        var alreadyBookedRoomIds = await dbContext.BookedNights
+            .Where(x =>
+                roomIds.Contains(x.RoomId)
+                && x.Date >= bookingRequest.CheckInDate
+                && x.Date < bookingRequest.CheckOutDate)
+            .Select(x => x.RoomId)
+            .Distinct()
+            .ToArrayAsync();
+
+        var firstFreeRoom = hotel.Rooms
+            .Where(r => r.Matches(bookingRequest))
+            .FirstOrDefault(room => !alreadyBookedRoomIds.Contains(room.Id));
+
+        return firstFreeRoom;
     }
 }

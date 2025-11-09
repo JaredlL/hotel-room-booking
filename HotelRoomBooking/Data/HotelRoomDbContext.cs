@@ -12,49 +12,56 @@ public class HotelRoomDbContext(DbContextOptions<HotelRoomDbContext> contextOpti
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        var hotelEntity = modelBuilder.Entity<Hotel>();
+        modelBuilder.Entity<Hotel>(h =>
+        {
+            // For simplicity the hotel name is used as the primary key.
+            // However, if there was a requirement to rename hotels or support duplicate names,
+            // a DB-managed long key would support greater flexibility.
+            h.HasKey(x => x.Name);
 
-        // For simplicity the hotel name is used as the primary key.
-        // However, if there was a requirement to rename hotels or support duplicate names,
-        // a DB-managed long key would support greater flexibility.
-        hotelEntity.HasKey(x => x.Name);
+            h.HasMany(x => x.Rooms)
+                .WithOne(x => x.Hotel)
+                .OnDelete(DeleteBehavior.Cascade);
 
-        hotelEntity.HasMany(x => x.Rooms)
-            .WithOne(x => x.Hotel)
-            .OnDelete(DeleteBehavior.Cascade);
+            h.Ignore(x => x.Links);
+        });
 
-        hotelEntity.Ignore(x => x.Links);
+        modelBuilder.Entity<Room>(r =>
+        {
+            r.HasKey(x => x.Id);
+            r.HasOne(x => x.Hotel)
+                .WithMany(x => x.Rooms)
+                .IsRequired();
 
-        var roomEntity = modelBuilder.Entity<Room>();
-        roomEntity.HasKey(x => x.Id);
-        roomEntity.HasOne(x => x.Hotel);
-        roomEntity.Property(x => x.RoomType)
-            .HasConversion(
-                v => v.ToString(),
-                v => Enum.Parse<RoomType>(v));
+            r.Property(x => x.RoomType)
+                .HasConversion(
+                    v => v.ToString(),
+                    v => Enum.Parse<RoomType>(v));
 
-        roomEntity.HasMany(x => x.BookedNights);
+            r.HasMany(x => x.BookedNights);
+        });
 
-        var bookingEntity = modelBuilder.Entity<Booking>();
-        bookingEntity.HasKey(x => x.BookingReference);
-        bookingEntity.HasOne(x => x.BookedRoom);
+        modelBuilder.Entity<Booking>(b =>
+        {
+            b.HasKey(x => x.BookingReference);
+            b.HasOne(x => x.BookedRoom);
 
-        bookingEntity.HasMany(x => x.BookedNights)
-            .WithOne()
-            .HasForeignKey(x => x.BookingId)
-            .IsRequired();
+            b.HasMany(x => x.BookedNights)
+                .WithOne()
+                .HasForeignKey(x => x.BookingId)
+                .IsRequired();
+        });
 
-        var bookedNightEntity = modelBuilder.Entity<BookedNight>();
+        modelBuilder.Entity<BookedNight>(bn =>
+        {
+            // This composite key ensures a room cannot be double booked for a night.
+            // It should also enable efficient queries for finding all bookings for a room on a given day.
+            bn.HasKey(x => new { x.RoomId, x.Date });
 
-        // This composite key ensures a room cannot be double booked for a night.
-        // It should also enable efficient queries for finding all bookings for a room on a given day.
-        bookedNightEntity.HasKey(x => new { x.RoomId, x.Date });
-
-        bookedNightEntity.HasOne<Room>()
-            .WithMany(r => r.BookedNights)
-            .HasForeignKey(x => x.RoomId)
-            .IsRequired();
-
-        base.OnModelCreating(modelBuilder);
+            bn.HasOne<Room>()
+                .WithMany(r => r.BookedNights)
+                .HasForeignKey(x => x.RoomId)
+                .IsRequired();
+        });
     }
 }

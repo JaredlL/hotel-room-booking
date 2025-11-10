@@ -29,6 +29,7 @@ public class HotelService
                 });
             })
             .WithName("CreateHotel")
+            .WithDescription("Create Hotels")
             .AddEndpointFilter<ValidationFilter<Hotel>>();
 
         app.MapGet("/hotels/{hotelName}", async (string hotelName, HotelRoomDbContext dbContext) =>
@@ -39,6 +40,7 @@ public class HotelService
 
                 return hotel is not null ? Results.Ok(hotel) : Results.NotFound();
             })
+            .WithDescription("Returns a Hotel by its name")
             .WithName("GetHotelById");
 
         app.MapGet("/hotels", async (HotelRoomDbContext dbContext) =>
@@ -49,7 +51,8 @@ public class HotelService
 
                 return Results.Ok(hotels);
             })
-            .WithName("GetAllHotels");
+            .WithName("GetAllHotels")
+            .WithDescription("Returns all Hotels");
 
         app.MapGet("/hotels/{hotelName}/available-rooms",
                 async ([FromRoute] string hotelName,
@@ -83,6 +86,7 @@ public class HotelService
 
                     return Results.Ok(availableRooms);
                 })
+            .WithDescription("Returns a list of available rooms for the given dates and number of guests")
             .WithName("AvailableRooms");
 
         app.MapPost("/hotels/{hotelName}/bookings",

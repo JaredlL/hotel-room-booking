@@ -22,6 +22,7 @@ public static class DataSeedingService
                 Booking = new BookingDto(booking),
             });
         })
+        .WithDescription("Seeds the database with a single hotel and a single booking")
         .WithName("SeedDatabase");
 
         app.MapDelete("/testdata", async (HotelRoomDbContext dbContext) =>
@@ -30,6 +31,7 @@ public static class DataSeedingService
             await dbContext.SaveChangesAsync();
             return Results.NoContent();
         })
+        .WithDescription("Clears the database of all data")
         .WithName("ClearDatabase");
     }
 

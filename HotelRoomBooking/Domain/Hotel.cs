@@ -20,7 +20,7 @@ public class Hotel
         },
         new()
         {
-            Href = $"{Name}/available-rooms",
+            Href = $"hotels/{Name}/available-rooms",
             Rel = "rooms",
             Method = "get"
         },

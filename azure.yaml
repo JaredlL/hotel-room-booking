@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: hotel-room-booking
+services:  
+  app:
+    language: dotnet
+    project: ./HotelRoomBooking.AppHost/HotelRoomBooking.AppHost.csproj
+    host: containerapp

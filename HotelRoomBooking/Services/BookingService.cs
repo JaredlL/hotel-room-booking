@@ -21,6 +21,7 @@ public static class BookingService
                     ? Results.Ok(new BookingDto(booking))
                     : Results.NotFound();
             })
-            .WithName("GetBookingById");
+            .WithName("GetBookingById")
+            .WithDescription("Returns a booking by its reference");
     }
 }

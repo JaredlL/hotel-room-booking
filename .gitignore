@@ -358,3 +358,4 @@ MigrationBackup/
 
 # User-specific stuff
 .idea/*
+.azure

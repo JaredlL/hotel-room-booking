@@ -3,7 +3,14 @@
 A RESTful hotel room booking API built with ASP.NET and Aspire.
 Uses EFCore with PostgreSQL as the persistence layer.
 
-## 🚀 Quick Start
+A version is deployed to Azure:
+- View OpenAPI at https://hotelroombooking.gentlepond-023a01ce.uksouth.azurecontainerapps.io/scalar/
+- Hit endpoints like https://hotelroombooking.gentlepond-023a01ce.uksouth.azurecontainerapps.io/hotels
+```bash
+curl 'https://hotelroombooking.gentlepond-023a01ce.uksouth.azurecontainerapps.io/hotels'
+```
+
+## 🚀 Local Development Quick Start
 
 ### Prerequisites
 
@@ -11,7 +18,8 @@ Uses EFCore with PostgreSQL as the persistence layer.
 - .NET Aspire
 - Container runtime - Docker (to run PostgreSQL)
 
-### Running the Application
+
+### Running the Application locally
 
 The app leans on [Aspire](https://learn.microsoft.com/en-us/dotnet/aspire/get-started/aspire-overview) to enable local testing and development.
 
@@ -156,18 +164,23 @@ Use the provided `HotelRoomBooking.http` file for manual testing in Visual Studi
 
 ### Azure Deployment
 
-The project is configured for Azure deployment via .NET Aspire:
+Prerequisits - Azure Developer CLI (azd)
 
-TODO
+The project is configured for Azure deployment via .NET Aspire.
+To deploy run:
+```bash
+azd up
+```
+
+Further instructions on this page https://learn.microsoft.com/en-us/dotnet/aspire/deployment/azd/aca-deployment
+
 
 ### Production Considerations
 
-1. **Database Migrations**: Manually create database and apply migrations instead of `EnsureCreatedAsync()`
-2. **Connection Strings**: Store in Azure Key Vault or environment variables
-3. **Logging**: Configure application insights or logging providers
-4. **HTTPS**: Ensure HTTPS is enabled in production
-5. **CORS**: Configure CORS policies if needed
-6. **Rate Limiting**: Consider implementing rate limiting for production
+1. **Database Migrations**: Manually create database and apply migrations instead of `EnsureMigratedAsync()`
+2. **Logging**: Configure application insights or logging providers
+3. **HTTPS**: Ensure HTTPS is enabled in production
+4. **Rate Limiting**: Consider implementing rate limiting for production
 
 ### Design Decisions
 
@@ -206,6 +219,9 @@ The system handles concurrent booking requests using:
 1. Increase test coverage
 2. Add logging (some is already built in)
 3. Impove error response messages - utilise problem details
+4. Clarify requirements such as
+   1. Should room names be unique within a Hotel
+   2. Should room types have a defined size
 
 ## 📄 License
 

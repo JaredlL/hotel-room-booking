@@ -25,13 +25,19 @@ public static class Program
 
         builder.AddServiceDefaults();
         builder.Services.AddOpenApi();
+        builder.Services.AddProblemDetails();
         builder.AddNpgsqlDbContext<HotelRoomDbContext>(connectionName: "hotelbooking");
 
         var app = builder.Build();
 
         app.MapDefaultEndpoints();
+        app.UseExceptionHandler();
 
-        // Configure the HTTP request pipeline.
+        app.UseStatusCodePages(async statusCodeContext => await Results.Problem(statusCode: statusCodeContext.HttpContext.Response.StatusCode)
+            .ExecuteAsync(statusCodeContext.HttpContext));
+
+        app.UseHttpsRedirection();
+
         if (app.Environment.IsDevelopment())
         {
             // go to /openapi/v1.json
@@ -41,17 +47,22 @@ public static class Program
             app.MapScalarApiReference();
 
             // In development mode, create the database if it doesn't exist.
-            // In production, the database is expected to be created and migrated manually.
             await using var scope = app.Services.CreateAsyncScope();
             await using var db = scope.ServiceProvider.GetRequiredService<HotelRoomDbContext>();
             await db.Database.EnsureCreatedAsync();
         }
+        else
+        {
+            // Also enable Scalar UI in production mode to demonstrate it.
+            app.MapOpenApi();
+            app.MapScalarApiReference();
 
-        app.UseStatusCodePages(async statusCodeContext
-            => await Results.Problem(statusCode: statusCodeContext.HttpContext.Response.StatusCode)
-                .ExecuteAsync(statusCodeContext.HttpContext));
-
-        app.UseHttpsRedirection();
+            // In a real Production, the database is expected to be created and migrated manually.
+            // For convenience, we let the app do it automatically.
+            await using var scope = app.Services.CreateAsyncScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<HotelRoomDbContext>();
+            await db.Database.MigrateAsync();
+        }
 
         HotelService.MapEndpoints(app);
         BookingService.MapEndpoints(app);

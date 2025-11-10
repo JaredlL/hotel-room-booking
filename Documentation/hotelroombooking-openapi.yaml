@@ -3,12 +3,13 @@ info:
   title: HotelRoomBooking | v1
   version: 1.0.0
 servers:
-  - url: http://localhost:5160/
+  - url: https://hotelroombooking.gentlepond-023a01ce.uksouth.azurecontainerapps.io/
 paths:
   /hotels:
     post:
       tags:
         - HotelRoomBooking
+      description: Create Hotels
       operationId: CreateHotel
       requestBody:
         content:
@@ -22,6 +23,7 @@ paths:
     get:
       tags:
         - HotelRoomBooking
+      description: Returns all Hotels
       operationId: GetAllHotels
       responses:
         "200":
@@ -30,6 +32,7 @@ paths:
     get:
       tags:
         - HotelRoomBooking
+      description: Returns a Hotel by its name
       operationId: GetHotelById
       parameters:
         - name: hotelName
@@ -44,6 +47,8 @@ paths:
     get:
       tags:
         - HotelRoomBooking
+      description: Returns a list of available rooms for the given dates and number of
+        guests
       operationId: AvailableRooms
       parameters:
         - name: hotelName
@@ -96,6 +101,7 @@ paths:
     get:
       tags:
         - HotelRoomBooking
+      description: Returns a booking by its reference
       operationId: GetBookingById
       parameters:
         - name: bookingReference
@@ -111,6 +117,7 @@ paths:
     post:
       tags:
         - HotelRoomBooking
+      description: Seeds the database with a single hotel and a single booking
       operationId: SeedDatabase
       responses:
         "200":
@@ -118,6 +125,7 @@ paths:
     delete:
       tags:
         - HotelRoomBooking
+      description: Clears the database of all data
       operationId: ClearDatabase
       responses:
         "200":

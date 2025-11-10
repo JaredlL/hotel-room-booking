@@ -1,0 +1,226 @@
+openapi: 3.0.1
+info:
+  title: HotelRoomBooking | v1
+  version: 1.0.0
+servers:
+  - url: http://localhost:5160/
+paths:
+  /hotels:
+    post:
+      tags:
+        - HotelRoomBooking
+      operationId: CreateHotel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Hotel"
+        required: true
+      responses:
+        "200":
+          description: OK
+    get:
+      tags:
+        - HotelRoomBooking
+      operationId: GetAllHotels
+      responses:
+        "200":
+          description: OK
+  /hotels/{hotelName}:
+    get:
+      tags:
+        - HotelRoomBooking
+      operationId: GetHotelById
+      parameters:
+        - name: hotelName
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+  /hotels/{hotelName}/available-rooms:
+    get:
+      tags:
+        - HotelRoomBooking
+      operationId: AvailableRooms
+      parameters:
+        - name: hotelName
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: checkin
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: checkout
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: numberOfGuests
+          in: query
+          schema:
+            type: integer
+            format: int32
+      responses:
+        "200":
+          description: OK
+  /hotels/{hotelName}/bookings:
+    post:
+      tags:
+        - HotelRoomBooking
+      description: Attempts to book a room that matches the given criteria.
+      operationId: CreateBooking
+      parameters:
+        - name: hotelName
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+  /bookings/{bookingReference}:
+    get:
+      tags:
+        - HotelRoomBooking
+      operationId: GetBookingById
+      parameters:
+        - name: bookingReference
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: OK
+  /testdata:
+    post:
+      tags:
+        - HotelRoomBooking
+      operationId: SeedDatabase
+      responses:
+        "200":
+          description: OK
+    delete:
+      tags:
+        - HotelRoomBooking
+      operationId: ClearDatabase
+      responses:
+        "200":
+          description: OK
+components:
+  schemas:
+    BookingRequest:
+      required:
+        - guestId
+        - numberOfGuests
+        - checkInDate
+        - checkOutDate
+      type: object
+      properties:
+        roomType:
+          $ref: "#/components/schemas/NullableOfRoomType"
+        roomName:
+          maxLength: 100
+          minLength: 0
+          type: string
+          nullable: true
+        guestId:
+          maxLength: 100
+          minLength: 0
+          type: string
+        numberOfGuests:
+          maximum: 100
+          minimum: 1
+          type: integer
+          format: int32
+        checkInDate:
+          type: string
+          format: date
+        checkOutDate:
+          type: string
+          format: date
+        requiredNights:
+          type: array
+          items:
+            type: string
+            format: date
+          nullable: true
+    Hotel:
+      required:
+        - name
+      type: object
+      properties:
+        name:
+          maxLength: 100
+          minLength: 0
+          type: string
+        rooms:
+          maxItems: 6
+          minItems: 6
+          type: array
+          items:
+            $ref: "#/components/schemas/Room"
+        links:
+          type: array
+          items:
+            $ref: "#/components/schemas/Link"
+          nullable: true
+    Link:
+      required:
+        - href
+        - rel
+        - method
+      type: object
+      properties:
+        href:
+          type: string
+        rel:
+          type: string
+        method:
+          type: string
+    NullableOfRoomType:
+      enum:
+        - Single
+        - Double
+        - Deluxe
+        - null
+      nullable: true
+    Room:
+      required:
+        - roomName
+        - roomType
+      type: object
+      properties:
+        roomName:
+          maxLength: 100
+          minLength: 0
+          type: string
+        roomType:
+          $ref: "#/components/schemas/RoomType"
+        capacity:
+          maximum: 100
+          minimum: 1
+          type: integer
+          format: int32
+    RoomType:
+      enum:
+        - Single
+        - Double
+        - Deluxe
+tags:
+  - name: HotelRoomBooking

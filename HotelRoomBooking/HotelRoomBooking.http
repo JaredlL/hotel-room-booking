@@ -47,6 +47,9 @@ GET {{HotelRoomBooking_HostAddress}}/hotels/{{HotelRoomBooking_DefaultHotelName}
 ### Get available Rooms
 GET {{HotelRoomBooking_HostAddress}}/hotels/{{HotelRoomBooking_DefaultHotelName}}/available-rooms?checkin=2025-11-07&checkout=2025-11-09
 
+### Get available Rooms for 2
+GET {{HotelRoomBooking_HostAddress}}/hotels/{{HotelRoomBooking_DefaultHotelName}}/available-rooms?checkin=2025-11-07&checkout=2025-11-09&numberOfGuests=2
+
 ### Request a Booking for 2 guests
 POST {{HotelRoomBooking_HostAddress}}/hotels/{{HotelRoomBooking_DefaultHotelName}}/bookings
 Content-Type: application/json

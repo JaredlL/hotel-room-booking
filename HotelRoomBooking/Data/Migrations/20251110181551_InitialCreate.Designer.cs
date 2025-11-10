@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace HotelRoomBooking.Migrations
 {
     [DbContext(typeof(HotelRoomDbContext))]
-    [Migration("20251109214107_InitialCreate")]
+    [Migration("20251110181551_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -49,7 +49,7 @@ namespace HotelRoomBooking.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("BookingReference"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<long>("BookingReference"));
 
                     b.Property<long>("BookedRoomId")
                         .HasColumnType("bigint");

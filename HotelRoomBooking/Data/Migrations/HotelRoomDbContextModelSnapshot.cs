@@ -46,7 +46,7 @@ namespace HotelRoomBooking.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("BookingReference"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<long>("BookingReference"));
 
                     b.Property<long>("BookedRoomId")
                         .HasColumnType("bigint");

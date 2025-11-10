@@ -44,6 +44,13 @@ public class HotelRoomDbContext(DbContextOptions<HotelRoomDbContext> contextOpti
         modelBuilder.Entity<Booking>(b =>
         {
             b.HasKey(x => x.BookingReference);
+
+            // Ensure that the booking reference is auto-incremented and
+            // that app code cannot specify a booking reference.
+            // This removes the risk that a reference is accidentally reused.
+            b.Property(x => x.BookingReference)
+                .UseIdentityAlwaysColumn();
+
             b.HasOne(x => x.BookedRoom);
 
             b.HasMany(x => x.BookedNights)

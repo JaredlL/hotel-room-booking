@@ -50,7 +50,7 @@ namespace HotelRoomBooking.Migrations
                 columns: table => new
                 {
                     BookingReference = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
                     HotelName = table.Column<string>(type: "character varying(100)", nullable: false),
                     BookedRoomId = table.Column<long>(type: "bigint", nullable: false),
                     NumberOfGuests = table.Column<int>(type: "integer", nullable: false),

@@ -107,10 +107,10 @@ public class HotelService
                             return Results.NotFound();
                         }
 
-                        var firstFreeRoom = await FirstFreeMatchingRoom(hotel, dbContext, bookingRequest);
+                        var firstFreeRoom = await FindFirstFreeMatchingRoomAsync(hotel, dbContext, bookingRequest, ct);
                         if (firstFreeRoom is not null)
                         {
-                            return await CreateBooking(bookingRequest, firstFreeRoom, hotel, dbContext);
+                            return await CreateBookingAsync(bookingRequest, firstFreeRoom, hotel, dbContext, ct);
                         }
 
                         return Results.Conflict("All suitable rooms are fully booked");
@@ -121,11 +121,12 @@ public class HotelService
             .AddEndpointFilter<ValidationFilter<BookingRequest>>();
     }
 
-    private static async Task<IResult> CreateBooking(
+    private static async Task<IResult> CreateBookingAsync(
         BookingRequest bookingRequest,
         Room firstFreeRoom,
         Hotel hotel,
-        HotelRoomDbContext dbContext)
+        HotelRoomDbContext dbContext,
+        CancellationToken ct)
     {
         var nights = bookingRequest.RequiredNights.Select(date => new BookedNight()
             {
@@ -144,17 +145,18 @@ public class HotelService
         };
 
         dbContext.Bookings.Add(booking);
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(ct);
 
         var bookingDto = new BookingDto(booking);
 
         return Results.Created($"/bookings/{booking.BookingReference}", bookingDto);
     }
 
-    private static async Task<Room?> FirstFreeMatchingRoom(
+    private static async Task<Room?> FindFirstFreeMatchingRoomAsync(
         Hotel hotel,
         HotelRoomDbContext dbContext,
-        BookingRequest bookingRequest)
+        BookingRequest bookingRequest,
+        CancellationToken ct)
     {
         var roomIds = hotel.Rooms.Select(r => r.Id).ToList();
 
@@ -165,10 +167,15 @@ public class HotelService
                 && x.Date < bookingRequest.CheckOutDate)
             .Select(x => x.RoomId)
             .Distinct()
-            .ToArrayAsync();
+            .ToArrayAsync(ct);
 
+        // Book the smallest room first, save bigger rooms for bigger bookings.
+        // If there were large numbers (1000+) of rooms per hotel, we may consider moving some of this logic to the DB
+        // to improve performance.
+        // As there are only 6 rooms per hotel, iterating the list in memory should not have a performance impact.
         var firstFreeRoom = hotel.Rooms
             .Where(r => r.Matches(bookingRequest))
+            .OrderBy(r => r.Capacity)
             .FirstOrDefault(room => !alreadyBookedRoomIds.Contains(room.Id));
 
         return firstFreeRoom;

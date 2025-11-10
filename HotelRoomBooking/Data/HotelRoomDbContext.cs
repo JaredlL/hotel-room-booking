@@ -17,6 +17,8 @@ public class HotelRoomDbContext(DbContextOptions<HotelRoomDbContext> contextOpti
             // For simplicity the hotel name is used as the primary key.
             // However, if there was a requirement to rename hotels or support duplicate names,
             // a DB-managed long key would support greater flexibility.
+            // This may also cause issues with special characters and confusion around case sensitivity.
+            // On balance, a separate DB-managed primary key should be added as part of further work.
             h.HasKey(x => x.Name);
 
             h.HasMany(x => x.Rooms)

@@ -5,6 +5,9 @@ using Polly.Retry;
 
 namespace HotelRoomBooking.Data;
 
+/// <summary>
+/// TODO - add retry strategy for transient DB / network errors
+/// </summary>
 public static class ResilienceStrategies
 {
     /// <summary>

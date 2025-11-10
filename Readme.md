@@ -30,10 +30,11 @@ The app leans on [Aspire](https://learn.microsoft.com/en-us/dotnet/aspire/get-st
    ```
 
 2. **Access the App**
-- Aspire Dashboard: [http://localhost:15057](http://localhost:15057)
-- API: [http://localhost:5160](http://localhost:5160) (HTTP)
-- Scalar UI: [http://localhost:5160/scalar/](http://localhost:5160/scalar/)
-- OpenAPI spec: [http://localhost:5160/openapi/v1.json](http://localhost:5160/openapi/v1.json)
+- Aspire Dashboard: http://localhost:15057
+- API: http://localhost:5160
+- Scalar UI: http://localhost:5160/scalar/
+- OpenAPI spec: http://localhost:5160/openapi/v1.json
+- View PostgreSQL data in Pgweb: http://localhost:50164
 
 3. **Send requests to the API**
 - Use the provided [HotelRoomBooking.http](HotelRoomBooking/HotelRoomBooking.http) file for manual testing in Visual Studio or Rider
@@ -110,7 +111,7 @@ curl 'http://localhost:5160/hotels/{hotelName}/bookings' \
 ```
 
 4. **Find booking details based on a booking reference.**
-    - a GET enpoint is provided on the Bookings resource
+    - a GET endpoint is provided on the Bookings resource
 ```bash
 curl http://localhost:5160/bookings/1
 ```
@@ -119,12 +120,13 @@ curl http://localhost:5160/bookings/1
 
 **The API must be testable**
 - OpenAPI documentation is at [Documentation/hotelroombooking-openapi.yaml](Documentation/hotelroombooking-openapi.yaml)
-  - Can be also accesed [http://localhost:5160/openapi/v1.json](http://localhost:5160/openapi/v1.json)
+  - Can be also accesed http://localhost:5160/openapi/v1.json
+  - Or https://hotelroombooking.gentlepond-023a01ce.uksouth.azurecontainerapps.io/scalar/
 
 **For testing purposes the API should expose functionality to allow for
   seeding and resetting the data** 
-  - a `/tesdata` resource is provided (note that this not a RESTful endpoint)
-  - data can be seeded with a POST request to `/testdata`
+  - A `/tesdata` resource is provided (note that this not a RESTful endpoint)
+  - Data can be seeded with a POST request to `/testdata`
 
 ```bash
 ```bash
@@ -143,7 +145,8 @@ curl http://localhost:5160/testdata \
 
 ### Integration Tests
 
-The project includes example integration tests using .NET Aspire testing infrastructure:
+The project includes example integration tests using .NET Aspire testing infrastructure.
+Unit test have yet to be added.
 
 ```bash
 cd HotelRoomBooking.IntegrationTest
@@ -209,19 +212,30 @@ The booking system uses the following priority for room selection:
 
 ### Concurrency Handling
 
-The system handles concurrent booking requests using:
+The system handles concurrent booking requests using optimistic concurrency
+strategies:
 
 1. Database-level unique constraints (prevents duplicates)
 2. Resilience strategies with retry logic (handles race conditions)
 
+Pessimistic concurrency was considered, but given writes are expected to be 
+rare when compared to reads, optimistic concurrency should provide better query performance.
+
 ### Further Work
 
-1. Increase test coverage
+1. Add a DB managed Hotel.Id primary key
+   1. Add unique constraint to the name (possibly with case sensitivity, trim whitespace ect)
+1. Increase test coverage including unit tests
 2. Add logging (some is already built in)
-3. Impove error response messages - utilise problem details
+   1. Consider structured logging
+3. Impove error response messages
+   1. Utilise problem details consistently
 4. Clarify requirements such as
    1. Should room names be unique within a Hotel
    2. Should room types have a defined size
+5. Consider authentication/authorization
+6. Handle transient PostgreSQL / network errors with appropriate level of retries
+7. Consider API versioning
 
 ## 📄 License
 

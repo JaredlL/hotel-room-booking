@@ -1,6 +1,12 @@
 @HotelRoomBooking_HostAddress = http://localhost:5160
 @HotelRoomBooking_DefaultHotelName = Grand Plaza Hotel
 
+### Seed with test data
+POST {{HotelRoomBooking_HostAddress}}/testdata
+
+### Clear all data
+DELETE {{HotelRoomBooking_HostAddress}}/testdata
+
 ### Add a Hotel
 POST {{HotelRoomBooking_HostAddress}}/hotels
 Content-Type: application/json
@@ -122,12 +128,6 @@ Content-Type: application/json
 
 ### Get Booking
 GET {{HotelRoomBooking_HostAddress}}/bookings/1
-
-### Seed with test data
-POST {{HotelRoomBooking_HostAddress}}/testdata
-
-### Clear all data
-DELETE {{HotelRoomBooking_HostAddress}}/testdata
 
 ### Get all hotels
 GET {{HotelRoomBooking_HostAddress}}/hotels

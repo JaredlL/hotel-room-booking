@@ -5,20 +5,26 @@ namespace HotelRoomBooking.Seeding;
 
 public static class DataSeedingService
 {
-    private const string Prefix = "/testdata";
-
     public static void MapEndpoints(WebApplication app)
     {
-        app.MapPost(Prefix, async (HotelRoomDbContext dbContext) =>
+        app.MapPost("/testdata", async (HotelRoomDbContext dbContext) =>
         {
             var hotel = CreateSeedHotel();
             dbContext.Hotels.Add(hotel);
             await dbContext.SaveChangesAsync();
-            return Results.Created($"/hotels/{hotel.Name}", hotel);
+
+            var booking = CreateSeedBooking(hotel);
+            dbContext.Bookings.Add(booking);
+            await dbContext.SaveChangesAsync();
+
+            return Results.Created($"/hotels/{hotel.Name}", new {
+                Hotel = hotel,
+                Booking = new BookingDto(booking),
+            });
         })
         .WithName("SeedDatabase");
 
-        app.MapDelete(Prefix, async (HotelRoomDbContext dbContext) =>
+        app.MapDelete("/testdata", async (HotelRoomDbContext dbContext) =>
         {
             dbContext.Hotels.RemoveRange(dbContext.Hotels);
             await dbContext.SaveChangesAsync();
@@ -53,7 +59,7 @@ public static class DataSeedingService
             new Room()
             {
                 Capacity = 1,
-                RoomName = "101",
+                RoomName = "104",
                 RoomType = RoomType.Single,
             },
             new Room()
@@ -70,4 +76,33 @@ public static class DataSeedingService
             }
         ]
     };
+
+    private static Booking CreateSeedBooking(Hotel hotel)
+    {
+        var room = hotel.Rooms.First(r => r.RoomName == "102");
+
+        var bookingRequest = new BookingRequest()
+        {
+            GuestId = "Bob",
+            NumberOfGuests = 2,
+            CheckInDate = new DateOnly(2025, 11, 07),
+            CheckOutDate = new DateOnly(2025, 11, 09),
+        };
+
+        var nights = bookingRequest.RequiredNights.Select(date => new BookedNight()
+            {
+                RoomId = room.Id,
+                Date = date
+            })
+            .ToList();
+
+        return new Booking
+        {
+            BookedNights = nights,
+            BookedRoom = room,
+            GuestId = bookingRequest.GuestId,
+            Hotel = hotel,
+            NumberOfGuests = bookingRequest.NumberOfGuests
+        };
+    }
 }

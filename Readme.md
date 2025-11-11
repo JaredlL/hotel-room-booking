@@ -62,6 +62,7 @@ The app leans on [Aspire](https://learn.microsoft.com/en-us/dotnet/aspire/get-st
 
 - This is enforced by a database-level constraint on the `BookedNight` table.
   - The composite key `(RoomId, Date)` prevents double-bookings.
+- It is assumed that checkout is in the morning, and a room will be avaiable for a new booking in the evening
 
 
 **Any booking at the hotel must not require guests to change rooms at any point during their stay**
@@ -145,19 +146,13 @@ curl http://localhost:5160/testdata \
 
 ### Integration Tests
 
-The project includes example integration tests using .NET Aspire testing infrastructure.
+The project includes minimal example integration tests using .NET Aspire testing infrastructure.
 Unit test have yet to be added.
 
 ```bash
 cd HotelRoomBooking.IntegrationTest
 dotnet test
 ```
-
-**Test Coverage:**
-- Empty hotel list retrieval
-- Hotel creation
-- Booking creation
-- Conflict detection when all rooms are booked
 
 ### Manual Testing
 
@@ -187,7 +182,7 @@ Further instructions on this page https://learn.microsoft.com/en-us/dotnet/aspir
 
 ### Design Decisions
 
-1. **Minimal APIs**: Used ASP.NET Core Minimal APIs for a clean, modern approach
+1. **Minimal APIs**: As recommended by Microsoft - less boilerplate and higher performance
 3. **Domain Models**: Rich domain models with validation logic
 5. **Database-first Constraints**: Unique constraints and composite keys at database level
 6. **Resilience Patterns**: Polly retry policies for race condition handling
@@ -226,6 +221,7 @@ rare when compared to reads, optimistic concurrency should provide better query 
 1. Add a DB managed Hotel.Id primary key
    1. Add unique constraint to the name (possibly with case sensitivity, trim whitespace ect)
 1. Increase test coverage including unit tests
+   1Current assertions are weak and only test the happy path
 2. Add logging (some is already built in)
    1. Consider structured logging
 3. Impove error response messages
@@ -233,9 +229,14 @@ rare when compared to reads, optimistic concurrency should provide better query 
 4. Clarify requirements such as
    1. Should room names be unique within a Hotel
    2. Should room types have a defined size
+   3. Is a room avaiable for a new booking the same evening as checkout
 5. Consider authentication/authorization
 6. Handle transient PostgreSQL / network errors with appropriate level of retries
 7. Consider API versioning
+8. Potential performance improvements
+   1. Pagenation and query parameters of `/hotels`
+   2. Caching could be used for avaiable date queries (which are likely to be within the near future)
+   3. Performance tests and profiling would be required
 
 ## 📄 License
 

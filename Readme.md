@@ -24,10 +24,10 @@ curl 'https://hotelroombooking.gentlepond-023a01ce.uksouth.azurecontainerapps.io
 The app leans on [Aspire](https://learn.microsoft.com/en-us/dotnet/aspire/get-started/aspire-overview) to enable local testing and development.
 
 1. **Run the AppHost project in development mode**
-   ```bash
-   cd HotelRoomBooking.AppHost
-   dotnet run --launch-profile http
-   ```
+```bash
+cd HotelRoomBooking.AppHost
+dotnet run --launch-profile http
+```
 
 2. **Access the App**
 - Aspire Dashboard: http://localhost:15057
@@ -47,7 +47,7 @@ The app leans on [Aspire](https://learn.microsoft.com/en-us/dotnet/aspire/get-st
 **Hotels have 3 room types: single, double, deluxe**
 
 - This is represented by an enum `RoomType`
-- Seperate Room object types were considered, but the extra complexity did not appear necessary.
+- Separate Room object types were considered, but the extra complexity did not appear necessary.
   - RoomTypes do not encode any additional rules.
   - For example, no constraint is given about the number of beds in a room.
 
@@ -55,14 +55,14 @@ The app leans on [Aspire](https://learn.microsoft.com/en-us/dotnet/aspire/get-st
 
 - This is enforced by a `Length` request model validation on the `POST /hotels` endpoint.
 - A [PostgreSQL trigger](https://www.postgresql.org/docs/current/sql-createtrigger.html) was considered
-  but would be less explicit and less flexible to changes in this buisness rule.
+  but would be less explicit and less flexible to changes in this business rule.
 
 
 **A room cannot be double booked for any given night**
 
 - This is enforced by a database-level constraint on the `BookedNight` table.
   - The composite key `(RoomId, Date)` prevents double-bookings.
-- It is assumed that checkout is in the morning, and a room will be avaiable for a new booking in the evening
+- It is assumed that checkout is in the morning, and a room will be available for a new booking in the evening
 
 
 **Any booking at the hotel must not require guests to change rooms at any point during their stay**
@@ -84,8 +84,8 @@ The app leans on [Aspire](https://learn.microsoft.com/en-us/dotnet/aspire/get-st
 
 ### Business Functionality
 
-- **Find a hotel based on its name.**
-    - a POST endpoint is provided. For example
+1. **Find a hotel based on its name.**
+    - a GET endpoint is provided. For example
 ```bash
 curl 'http://localhost:5160/hotels/{hotelName}'
 ```
@@ -121,15 +121,14 @@ curl http://localhost:5160/bookings/1
 
 **The API must be testable**
 - OpenAPI documentation is at [Documentation/hotelroombooking-openapi.yaml](Documentation/hotelroombooking-openapi.yaml)
-  - Can be also accesed http://localhost:5160/openapi/v1.json
+  - Can be also accessed at http://localhost:5160/openapi/v1.json
   - Or https://hotelroombooking.gentlepond-023a01ce.uksouth.azurecontainerapps.io/scalar/
 
 **For testing purposes the API should expose functionality to allow for
   seeding and resetting the data** 
-  - A `/tesdata` resource is provided (note that this not a RESTful endpoint)
+  - A `/testdata` resource is provided (note that this not a RESTful endpoint)
   - Data can be seeded with a POST request to `/testdata`
 
-```bash
 ```bash
 curl http://localhost:5160/testdata \
 --request POST
@@ -147,7 +146,7 @@ curl http://localhost:5160/testdata \
 ### Integration Tests
 
 The project includes minimal example integration tests using .NET Aspire testing infrastructure.
-Unit test have yet to be added.
+Unit tests have yet to be added.
 
 ```bash
 cd HotelRoomBooking.IntegrationTest
@@ -162,7 +161,7 @@ Use the provided `HotelRoomBooking.http` file for manual testing in Visual Studi
 
 ### Azure Deployment
 
-Prerequisits - Azure Developer CLI (azd)
+Prerequisites - Azure Developer CLI (azd)
 
 The project is configured for Azure deployment via .NET Aspire.
 To deploy run:
@@ -183,10 +182,10 @@ Further instructions on this page https://learn.microsoft.com/en-us/dotnet/aspir
 ### Design Decisions
 
 1. **Minimal APIs**: As recommended by Microsoft - less boilerplate and higher performance
-3. **Domain Models**: Rich domain models with validation logic
-5. **Database-first Constraints**: Unique constraints and composite keys at database level
-6. **Resilience Patterns**: Polly retry policies for race condition handling
-7. **Validation**: Fluent validation using data annotations and custom validators
+2. **Domain Models**: Rich domain models with validation logic
+3. **Database-first Constraints**: Unique constraints and composite keys at database level
+4. **Resilience Patterns**: Polly retry policies for race condition handling
+5. **Validation**: Fluent validation using data annotations and custom validators
 
 ## 📝 Additional Notes
 
@@ -219,23 +218,23 @@ rare when compared to reads, optimistic concurrency should provide better query 
 ### Further Work
 
 1. Add a DB managed Hotel.Id primary key
-   1. Add unique constraint to the name (possibly with case sensitivity, trim whitespace ect)
+   1. Add unique constraint to the name (possibly with case sensitivity, trim whitespace etc)
 1. Increase test coverage including unit tests
-   1Current assertions are weak and only test the happy path
+   1. Current assertions are weak and only test the happy path
 2. Add logging (some is already built in)
    1. Consider structured logging
-3. Impove error response messages
+3. Improve error response messages
    1. Utilise problem details consistently
 4. Clarify requirements such as
    1. Should room names be unique within a Hotel
    2. Should room types have a defined size
-   3. Is a room avaiable for a new booking the same evening as checkout
+   3. Is a room available for a new booking the same evening as checkout
 5. Consider authentication/authorization
 6. Handle transient PostgreSQL / network errors with appropriate level of retries
 7. Consider API versioning
 8. Potential performance improvements
-   1. Pagenation and query parameters of `/hotels`
-   2. Caching could be used for avaiable date queries (which are likely to be within the near future)
+   1. Pagination and query parameters of `/hotels`
+   2. Caching could be used for available date queries (which are likely to be within the near future)
    3. Performance tests and profiling would be required
 
 ## 📄 License
